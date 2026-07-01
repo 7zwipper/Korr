@@ -25,9 +25,10 @@ public class FogRendererMixin {
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void korr$registerFogModifier(CallbackInfo ci) {
-        List<FogModifier> modified = new ArrayList<>(FOG_MODIFIERS);
+        List<FogModifier> modified = new ArrayList<>();
         modified.add(new KorrFogModifier());
+        modified.addAll(FOG_MODIFIERS);
         FOG_MODIFIERS = modified;
-        Korr.LOGGER.info("[Korr] Fog modifier registered.");
+        Korr.LOGGER.info("[Korr] Fog modifier registered (priority).");
     }
 }
