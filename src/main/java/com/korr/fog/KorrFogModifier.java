@@ -10,9 +10,9 @@ import net.minecraft.entity.Entity;
 
 public class KorrFogModifier extends FogModifier {
 
-    // ~2-4 чанка (1 чанк = 16 блоков)
-    private static final float FOG_START = 32.0f;
-    private static final float FOG_END = 64.0f;
+    // 3 чанка = 48 блоков
+    private static final float FOG_START = 24.0f;
+    private static final float FOG_END = 48.0f;
 
     @Override
     public void applyStartEndModifier(FogData data, Camera camera, ClientWorld clientWorld, float tickDelta, RenderTickCounter renderTickCounter) {
@@ -25,5 +25,5 @@ public class KorrFogModifier extends FogModifier {
     @Override
     public boolean shouldApply(CameraSubmersionType submersionType, Entity cameraEntity) {
         return submersionType == null || submersionType == CameraSubmersionType.NONE;
-    }
+     }
 }
