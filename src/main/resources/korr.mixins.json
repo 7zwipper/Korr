@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.korr.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "FogRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
