@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "korr",
+  "version": "${version}",
+  "name": "Korr",
+  "description": "Psychological horror. Not the monster. You.",
+  "authors": ["Kamonixxx"],
+  "contact": {},
+  "license": "ARR",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.korr.Korr"],
+    "client": ["com.korr.KorrClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": ">=1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
