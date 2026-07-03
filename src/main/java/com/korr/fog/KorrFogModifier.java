@@ -8,22 +8,51 @@ import net.minecraft.client.render.fog.FogModifier;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class KorrFogModifier extends FogModifier {
 
-    // 3 чанка = 48 блоков
-    private static final float FOG_START = 24.0f;
-    private static final float FOG_END = 48.0f;
+    private static final float DAY_START = 48f;
+    private static final float DAY_END = 96f;
+    private static final float NIGHT_START = 24f;
+    private static final float NIGHT_END = 48f;
+    private static final float SPIKE_END = 24f;
+
+    private static long spikeUntilMs = 0L;
+    private static long nextSpikeCheckMs = 0L;
 
     @Override
     public void applyStartEndModifier(FogData data, Camera camera, ClientWorld clientWorld, float tickDelta, RenderTickCounter renderTickCounter) {
-        data.renderDistanceStart = FOG_START;
-        data.renderDistanceEnd = FOG_END;
-        data.environmentalStart = FOG_START;
-        data.environmentalEnd = FOG_END;
+        long dayTime = clientWorld.getTimeOfDay() % 24000L;
+        boolean isNight = dayTime >= 13000L && dayTime <= 23000L;
+
+        float end = isNight ? NIGHT_END : DAY_END;
+        float start = isNight ? NIGHT_START : DAY_START;
+
+        long now = System.currentTimeMillis();
+
+        if (now >= nextSpikeCheckMs) {
+            long delayMs = ThreadLocalRandom.current().nextLong(180_000L, 1_500_000L);
+            nextSpikeCheckMs = now + delayMs;
+            if (ThreadLocalRandom.current().nextFloat() < 0.6f) {
+                long durationMs = ThreadLocalRandom.current().nextLong(8_000L, 20_000L);
+                spikeUntilMs = now + durationMs;
+            }
+        }
+
+        if (now < spikeUntilMs) {
+            end = SPIKE_END;
+            start = SPIKE_END * 0.5f;
+        }
+
+        data.renderDistanceStart = start;
+        data.renderDistanceEnd = end;
+        data.environmentalStart = start;
+        data.environmentalEnd = end;
     }
 
     @Override
     public boolean shouldApply(CameraSubmersionType submersionType, Entity cameraEntity) {
-        return submersionType == null || submersionType == CameraSubmersionType.NONE;
-     }
+        return submersionType == null || submersionType == CameraSubmersionType.NO NE;
+    }
 }
