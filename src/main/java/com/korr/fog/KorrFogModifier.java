@@ -22,7 +22,13 @@ public class KorrFogModifier extends FogModifier {
     private static long nextSpikeCheckMs = 0L;
 
     @Override
-    public void applyStartEndModifier(FogData data, Camera camera, ClientWorld clientWorld, float tickDelta, RenderTickCounter renderTickCounter) {
+    public void applyStartEndModifier(
+            FogData data,
+            Camera camera,
+            ClientWorld clientWorld,
+            float tickDelta,
+            RenderTickCounter renderTickCounter
+    ) {
         long dayTime = clientWorld.getTimeOfDay() % 24000L;
         boolean isNight = dayTime >= 13000L && dayTime <= 23000L;
 
@@ -32,10 +38,12 @@ public class KorrFogModifier extends FogModifier {
         long now = System.currentTimeMillis();
 
         if (now >= nextSpikeCheckMs) {
-            long delayMs = ThreadLocalRandom.current().nextLong(180_000L, 1_500_000L);
+            long delayMs = ThreadLocalRandom.current()
+                    .nextLong(180_000L, 1_500_000L);
             nextSpikeCheckMs = now + delayMs;
             if (ThreadLocalRandom.current().nextFloat() < 0.6f) {
-                long durationMs = ThreadLocalRandom.current().nextLong(8_000L, 20_000L);
+                long durationMs = ThreadLocalRandom.current()
+                        .nextLong(8_000L, 20_000L);
                 spikeUntilMs = now + durationMs;
             }
         }
@@ -52,7 +60,13 @@ public class KorrFogModifier extends FogModifier {
     }
 
     @Override
-    public boolean shouldApply(CameraSubmersionType submersionType, Entity cameraEntity) {
-        return submersionType == null || submersionType == CameraSubmersionType.NO NE;
+    public boolean shouldApply(
+            CameraSubmersionType submersionType,
+            Entity cameraEntity
+    ) {
+        if (submersionType == null) {
+            return true;
+        }
+        return submersionType == CameraSubmersionType.N ONE;
     }
 }
