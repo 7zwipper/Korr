@@ -9,6 +9,7 @@
   "license": "ARR",
   "environment": "*",
   "entrypoints": {
+    "preLaunch": ["com.korr.KorrPreLaunch"],
     "main": ["com.korr.Korr"],
     "client": ["com.korr.KorrClient"]
   },
