@@ -1,59 +1,40 @@
-package com.korr.fog;
+package com.korr;
 
-import net.minecraft.block.enums.CameraSubmersionType;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.render.fog.FogData;
-import net.minecraft.client.render.fog.FogModifier;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import net.fabricmc.loader.api.FabricLoader;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public class KorrFogModifier extends FogModifier {
-
-    private static final float DAY_START = 48f;
-    private static final float DAY_END = 96f;
-    private static final float NIGHT_START = 24f;
-    private static final float NIGHT_END = 48f;
-    private static final float SPIKE_END = 24f;
-
-    private static long spikeUntilMs = 0L;
-    private static long nextSpikeCheckMs = 0L;
-
+public class KorrPreLaunch implements PreLaunchEntrypoint {
     @Override
-    public void applyStartEndModifier(FogData data, Camera camera, ClientWorld clientWorld, float tickDelta, RenderTickCounter renderTickCounter) {
-        long dayTime = clientWorld.getTimeOfDay() % 24000L;
-        boolean isNight = dayTime >= 13000L && dayTime <= 23000L;
-
-        float end = isNight ? NIGHT_END : DAY_END;
-        float start = isNight ? NIGHT_START : DAY_START;
-
-        long now = System.currentTimeMillis();
-
-        if (now >= nextSpikeCheckMs) {
-            long delayMs = ThreadLocalRandom.current().nextLong(180000L, 1500000L);
-            nextSpikeCheckMs = now + delayMs;
-            if (ThreadLocalRandom.current().nextFloat() < 0.6f) {
-                long durationMs = ThreadLocalRandom.current().nextLong(8000L, 20000L);
-                spikeUntilMs = now + durationMs;
+    public void onPreLaunch() {
+        try {
+            Path configPath = FabricLoader.getInstance().getConfigDir().resolve("sodium-extra-options.json");
+            if (!Files.exists(configPath)) {
+                return;
             }
+            String content = Files.readString(configPath, StandardCharsets.UTF_8);
+            JsonObject root = JsonParser.parseString(content).getAsJsonObject();
+
+            JsonObject renderSettings = root.getAsJsonObject("render_settings");
+            if (renderSettings == null) return;
+            JsonObject fogTypeConfig = renderSettings.getAsJsonObject("fog_type_config");
+            if (fogTypeConfig == null) return;
+            JsonObject atmospheric = fogTypeConfig.getAsJsonObject("ATMOSPHERIC");
+            if (atmospheric == null) return;
+
+            atmospheric.addProperty("enable", false);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            Files.writeString(configPath, gson.toJson(root), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            System.out.println("[Korr] Could not patch Sodium Extra config: " + e.getMessage());
         }
-
-        if (now < spikeUntilMs) {
-            end = SPIKE_END;
-            start = SPIKE_END * 0.5f;
-        }
-
-        data.renderDistanceStart = start;
-        data.renderDistanceEnd = end;
-        data.environmentalStart = start;
-        data.environmentalEnd = end;
-    }
-
-    @Override
-    public boolean shouldApply(CameraSubmersionType submersionType, Entity cameraEntity) {
-        boolean alwaysApply = true;
-        return alwaysAp ply;
     }
 }
