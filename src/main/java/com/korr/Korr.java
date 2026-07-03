@@ -10,6 +10,7 @@ public class Korr implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        KorrConfig.load();
         LOGGER.info("[Korr] Initialized. Something is watching.");
     }
 }
