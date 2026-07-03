@@ -1,5 +1,7 @@
 package com.korr.fog;
 
+import com.korr.Korr;
+import com.korr.KorrConfig;
 import net.minecraft.block.enums.CameraSubmersionType;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.RenderTickCounter;
@@ -7,53 +9,67 @@ import net.minecraft.client.render.fog.FogData;
 import net.minecraft.client.render.fog.FogModifier;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-
 import java.util.concurrent.ThreadLocalRandom;
 
 public class KorrFogModifier extends FogModifier {
 
-    private static final float DAY_START = 48f;
-    private static final float DAY_END = 96f;
-    private static final float NIGHT_START = 24f;
-    private static final float NIGHT_END = 48f;
-    private static final float SPIKE_END = 24f;
+    private long spikeUntilMs = 0L;
+    private long nextSpikeCheckMs = 0L;
 
-    private static long spikeUntilMs = 0L;
-    private static long nextSpikeCheckMs = 0L;
+    private float currentStart = 0f;
+    private float currentEnd = 0f;
+    private boolean initialized = false;
 
     @Override
     public void applyStartEndModifier(FogData data, Camera camera, ClientWorld clientWorld, float tickDelta, RenderTickCounter renderTickCounter) {
+        if (!KorrConfig.data.enabled) return;
+
         long dayTime = clientWorld.getTimeOfDay() % 24000L;
         boolean isNight = dayTime >= 13000L && dayTime <= 23000L;
 
-        float end = isNight ? NIGHT_END : DAY_END;
-        float start = isNight ? NIGHT_START : DAY_START;
+        KorrConfig.ConfigData cfg = KorrConfig.data;
+        float targetEnd = isNight ? cfg.nightFogEnd : cfg.dayFogEnd;
+        float targetStart = isNight ? cfg.nightFogStart : cfg.dayFogStart;
 
         long now = System.currentTimeMillis();
 
         if (now >= nextSpikeCheckMs) {
-            long delayMs = ThreadLocalRandom.current().nextLong(180000L, 1500000L);
+            long delayMs = ThreadLocalRandom.current().nextLong(cfg.spikeMinDelayMs, cfg.spikeMaxDelayMs);
             nextSpikeCheckMs = now + delayMs;
-            if (ThreadLocalRandom.current().nextFloat() < 0.6f) {
-                long durationMs = ThreadLocalRandom.current().nextLong(8000L, 20000L);
+            if (ThreadLocalRandom.current().nextFloat() < cfg.spikeChance) {
+                long durationMs = ThreadLocalRandom.current().nextLong(cfg.spikeMinDurationMs, cfg.spikeMaxDurationMs);
                 spikeUntilMs = now + durationMs;
             }
         }
 
         if (now < spikeUntilMs) {
-            end = SPIKE_END;
-            start = SPIKE_END * 0.5f;
+            targetEnd = cfg.spikeFogEnd;
+            targetStart = cfg.spikeFogEnd * 0.5f;
         }
 
-        data.renderDistanceStart = start;
-        data.renderDistanceEnd = end;
-        data.environmentalStart = start;
-        data.environmentalEnd = end;
+        if (!initialized) {
+            currentStart = targetStart;
+            currentEnd = targetEnd;
+            initialized = true;
+        }
+
+        if (cfg.smoothTransitions) {
+            float speed = cfg.transitionSpeed;
+            currentStart += (targetStart - currentStart) * speed;
+            currentEnd += (targetEnd - currentEnd) * speed;
+        } else {
+            currentStart = targetStart;
+            currentEnd = targetEnd;
+        }
+
+        data.renderDistanceStart = currentStart;
+        data.renderDistanceEnd = currentEnd;
+        data.environmentalStart = currentStart;
+        data.environmentalEnd = currentEnd;
     }
 
     @Override
-    public boolean shouldApply(CameraSubmersionType submersionType, Entity cameraEntity) {
-        boolean alwaysApply = true;
-        return alwaysApply;
+    public boolean shouldApply(CameraSubmersionType type, Entity entity) {
+        return type == CameraSubmersionType.NONE && KorrConfig.data.enabled;
     }
 }
