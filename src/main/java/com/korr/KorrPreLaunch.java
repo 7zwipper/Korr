@@ -30,7 +30,7 @@ public class KorrPreLaunch implements PreLaunchEntrypoint {
             if (renderSettings == null) return;
             JsonObject fogTypeConfig = renderSettings.getAsJsonObject("fog_type_config");
             if (fogTypeConfig == null) return;
-            JsonObject atmospheric = fogTypeConfig.getAsJsonObject("ATMOSPHERIC");
+            JsonObject atmospheric = fogTypeConfig.getAsJsonObject("ATOSPHERIC");
             if (atmospheric == null) return;
 
             atmospheric.addProperty("enable", true);
