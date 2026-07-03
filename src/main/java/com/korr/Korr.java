@@ -14,4 +14,3 @@ public class Korr implements ModInitializer {
         LOGGER.info("[Korr] Initialized. Something is watching.");
     }
 }
-
