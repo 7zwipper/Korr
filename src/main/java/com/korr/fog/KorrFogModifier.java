@@ -70,6 +70,6 @@ public class KorrFogModifier extends FogModifier {
 
     @Override
     public boolean shouldApply(CameraSubmersionType type, Entity entity) {
-        return type == CameraSubmersionType.NONE && KorrConfig.data.enabled;
+        return (type == null || type == CameraSubmersionType.NONE) && KorrConfig.data.enabled;
     }
 }
