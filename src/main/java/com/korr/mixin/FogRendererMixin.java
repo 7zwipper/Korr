@@ -29,6 +29,6 @@ public class FogRendererMixin {
         modified.add(new KorrFogModifier());
         modified.addAll(FOG_MODIFIERS);
         FOG_MODIFIERS = modified;
-        Korr.LOGGER.info("[Korr] Fog modifier registered.");
+        Korr.LOGGER.info("[Korr] Fog modifier registered with priority.");
     }
 }
